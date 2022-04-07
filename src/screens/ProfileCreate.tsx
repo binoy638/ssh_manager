@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import db from "../lib/Storage";
 import { useNavigate } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export interface ProfileFormValues {
   profileName: string;
@@ -13,78 +16,104 @@ export interface ProfileFormValues {
 }
 
 function ProfileCreate() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ProfileFormValues>();
-
-  useEffect(() => {
-    console.log(errors);
-  }, [errors]);
-
   const navigate = useNavigate();
 
   const [requirePassword, setRequirePassword] = useState(true);
 
-  //! hash the password
+  const validationSchema = useMemo(() => {
+    if (requirePassword) {
+      return Yup.object().shape({
+        password: Yup.string()
+          .min(6, "Password must be at least 6 characters")
+          .optional(),
+        confirmPassword: Yup.string().oneOf(
+          [Yup.ref("password")],
+          "Passwords must match"
+        ),
+      });
+    }
+    return Yup.object().shape({
+      password: Yup.string().optional(),
+      confirmPassword: Yup.string().optional(),
+    });
+  }, [requirePassword]);
+
+  const formOptions = { resolver: yupResolver(validationSchema) };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<ProfileFormValues>(formOptions);
+
   const onSubmit: SubmitHandler<ProfileFormValues> = async (data) => {
+    const profiles = await db.fetchProfileByName(data.profileName);
+    const profileExists = profiles.length > 0;
+    if (profileExists) {
+      setError("profileName", { message: "Profile name already exists" });
+      return;
+    }
     const id = uuidv4();
+    const hash_passowrd = await invoke("hash_password", {
+      password: data.password,
+    });
+
+    if (typeof hash_passowrd !== "string") return;
     await db.createProfile(
       id,
       data.profileName,
-      data.password,
+      hash_passowrd,
       requirePassword
     );
+
     navigate("/profile/list");
   };
 
   return (
-    <div className="h-[90vh] flex items-center justify-center ">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-4/12 flex flex-col gap-4"
-      >
-        <Input
-          placeholder="Profile name"
-          register={register("profileName", {
-            required: `Profile name is required`,
-          })}
-          error={errors?.profileName?.message}
-        />
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <Input
+        placeholder="Profile name"
+        register={register("profileName", {
+          required: `Profile name is required`,
+        })}
+        error={errors?.profileName?.message}
+        type="text"
+      />
 
-        {requirePassword && (
-          <>
-            <Input
-              placeholder="Password"
-              register={register("password", {
-                required: `Password is required`,
-              })}
-              error={errors?.password?.message}
-            />
-            <Input
-              placeholder="Confirm Password"
-              register={register("confirmPassword", {
-                required: `Retype password`,
-              })}
-              error={errors?.confirmPassword?.message}
-            />
-          </>
-        )}
-
-        <div className="flex justify-start items-center gap-1">
-          <input
-            type="checkbox"
-            className="bg-red-100 border-red-300 rounded-lg  text-red-500 focus:ring-red-200 "
-            checked={requirePassword}
-            onChange={() => setRequirePassword(!requirePassword)}
+      {requirePassword && (
+        <>
+          <Input
+            placeholder="Password"
+            register={register("password", {
+              required: `Password is required`,
+            })}
+            error={errors?.password?.message}
+            type="password"
           />
-          <label className="text-sm">Enable Password Protection</label>
-        </div>
+          <Input
+            placeholder="Confirm Password"
+            register={register("confirmPassword", {
+              required: `Retype password`,
+            })}
+            error={errors?.confirmPassword?.message}
+            type="password"
+          />
+        </>
+      )}
 
-        <Button onClick={handleSubmit(onSubmit)}>Submit</Button>
-      </form>
-    </div>
+      <div className="flex justify-start items-center gap-1">
+        <input
+          type="checkbox"
+          className="bg-red-100 border-gray-300 rounded-lg  text-gray-700 focus:ring-gray-200 "
+          checked={requirePassword}
+          onChange={() => setRequirePassword(!requirePassword)}
+        />
+        <label className="text-sm">Enable Password Protection</label>
+      </div>
+
+      <Button onClick={handleSubmit(onSubmit)}>Submit</Button>
+    </form>
   );
 }
 

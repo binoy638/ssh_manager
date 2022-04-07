@@ -35,7 +35,7 @@ function SSHAddForm() {
   };
 
   return (
-    <div className="h-[90vh] flex items-center justify-center ">
+    <div className=" flex items-center justify-center ">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-4/12 flex flex-col gap-4"
@@ -44,9 +44,11 @@ function SSHAddForm() {
           placeholder="Name"
           register={register("name", { required: "Provide a name" })}
           error={errors?.name?.message}
+          type="text"
         />
 
         <Input
+          type="text"
           placeholder="Host IP"
           register={register("host", {
             required: "Host IP is required",
@@ -57,7 +59,9 @@ function SSHAddForm() {
           })}
           error={errors?.host?.message}
         />
+
         <Input
+          type="text"
           placeholder="Description"
           register={register("description")}
           error={errors?.description?.message}

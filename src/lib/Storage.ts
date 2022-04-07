@@ -43,6 +43,7 @@ async function createProfile(
 
 async function deleteProfile(id: string): Promise<void> {
   try {
+    await db.execute("DELETE FROM ssh where profile_id = $1", [id]);
     await db.execute("DELETE FROM profile where id = $1", [id]);
   } catch (error) {
     console.log(error);
@@ -54,11 +55,20 @@ async function getSSH(profile_id: string): Promise<ISSH[]> {
   await load;
   try {
     return await db.select(
-      `SELECT * FROM ssh WHERE profile_id = '${profile_id}';`
+      `SELECT * FROM ssh  where profile_id = '${profile_id}'`
     );
   } catch (error) {
     console.log(error);
     throw new Error("Error getting profiles");
+  }
+}
+
+async function fetchProfileByName(name: string): Promise<IProfile[]> {
+  try {
+    return await db.select(`SELECT * FROM profile where name = '${name}' `);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error fetching profile");
   }
 }
 
@@ -90,4 +100,5 @@ export default {
   getSSH,
   addSSH,
   deleteProfile,
+  fetchProfileByName,
 };

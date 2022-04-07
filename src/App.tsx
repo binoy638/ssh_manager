@@ -1,25 +1,28 @@
-// With the Tauri API npm package:
 import Home from "./screens/Home";
 import { Route, Routes } from "react-router-dom";
 import ProfileCreate from "./screens/ProfileCreate";
 import ProfileList from "./screens/ProfileList";
 import Profile from "./screens/Profile";
-import { useNavigate } from "react-router-dom";
 import SSHAddForm from "./screens/SSHAddForm";
-// With the Tauri global script, enabled when `tauri.conf.json > build > withGlobalTauri` is set to true:
+import Sidebar from "./components/Sidebar";
+import Toolbar from "./components/Toolbar";
 
 function App() {
-  const navigate = useNavigate();
   return (
-    <div className="bg-gray-200 h-screen w-screen">
-      <button onClick={() => navigate(-1)}>Back</button>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="profile/create" element={<ProfileCreate />} />
-        <Route path="profile/list" element={<ProfileList />} />
-        <Route path="profile/:id" element={<Profile />} />
-        <Route path="profile/:id/add" element={<SSHAddForm />} />
-      </Routes>
+    <div className="h-screen w-screen flex flex-col">
+      <Toolbar />
+      <div className="flex h-full ">
+        <Sidebar />
+        <div className="w-full  flex justify-center items-center lg:flex-[5] flex-[4]">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="profile/create" element={<ProfileCreate />} />
+            <Route path="profile/list" element={<ProfileList />} />
+            <Route path="profile/:id" element={<Profile />} />
+            <Route path="profile/:id/add" element={<SSHAddForm />} />
+          </Routes>
+        </div>
+      </div>
     </div>
   );
 }

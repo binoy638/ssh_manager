@@ -20,23 +20,21 @@ function ProfileList() {
   }, []);
 
   return (
-    <div className="flex justify-center items-center h-[90vh] ">
-      <div className="flex flex-col gap-4 ">
-        {profiles.map((profile) => {
-          return (
-            <div key={profile.id}>
-              <Link to={`/profile/${profile.id}`}>
-                <div className="bg-gray-700 px-4 py-2 flex justify-center items-center cursor-pointer rounded text-white hover:opacity-80">
-                  {profile.name}
-                </div>
-              </Link>
-            </div>
-          );
-        })}
-        <Button onClick={() => navigate("/profile/create")}>
-          Create new profile
-        </Button>
-      </div>
+    <div className="flex flex-col gap-4 h-full">
+      {profiles.map((profile) => {
+        return (
+          <div key={profile.id}>
+            <Link to={`/profile/${profile.id}`}>
+              <div className="bg-gray-700 px-4 py-2 flex justify-center items-center cursor-pointer rounded text-white hover:opacity-80">
+                {profile.name}
+              </div>
+            </Link>
+          </div>
+        );
+      })}
+      <Button onClick={() => navigate("/profile/create")}>
+        Create new profile
+      </Button>
     </div>
   );
 }

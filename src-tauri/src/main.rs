@@ -5,7 +5,7 @@
 
 use bcrypt::{hash, verify, DEFAULT_COST};
 use std::process::Command;
-use tauri_plugin_sql::TauriSql;
+use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
 #[tauri::command]
 fn ssh(address: String) {
@@ -20,7 +20,7 @@ fn ssh(address: String) {
 
 #[tauri::command]
 fn hash_password(password: String) -> String {
-    let hashed = match hash(password, DEFAULT_COST) {
+    let hashed = match hash(password, 4) {
         Ok(hashed_string) => hashed_string,
         Err(_e) => panic!("Error while hashing password"),
     };
@@ -49,10 +49,11 @@ fn main() {
 }
 
 // .add_migrations(
-//             "sqlite:app.db",
+//             "sqlite:appProd.db",
 //             vec![Migration {
 //                 version: 1,
 //                 description: "create tables",
 //                 sql: include_str!("../migrations/2.sql"),
 //                 kind: MigrationKind::Up,
-//             }]
+//             }],
+//         )

@@ -5,12 +5,6 @@ import { ISSH } from "../@types/model.types";
 import Button from "../components/Button";
 import Storage from "../lib/Storage";
 
-// declare global {
-//   interface Window {
-//     __TAURI__: any;
-//   }
-// }
-
 function Profile() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -31,7 +25,7 @@ function Profile() {
   };
 
   return (
-    <div className="flex justify-center items-center h-[90vh] flex-col gap-4">
+    <div className="flex justify-center items-center  flex-col gap-4">
       {ipAddresses.length === 0 ? (
         <div className="flex justify-center items-center  flex-col gap-4">
           <span className="text-lg text-red-500">Profile is empty</span>
